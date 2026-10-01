@@ -1,0 +1,44 @@
+name: Build and Release Mod
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Build Project
+      run: dotnet build --configuration Release
+
+    - name: Create Release Zip
+      shell: pwsh
+      run: |
+        $repoName = "${{ github.event.repository.name }}"
+        $zipName = "$repoName.zip"
+
+        New-Item -ItemType Directory -Path "./staging/Mods" -Force
+
+        Get-ChildItem -Path "./bin/Release" -Recurse -Filter "*.dll" | Copy-Item -Destination "./staging/Mods"
+        Copy-Item -Path "mod.json" -Destination "./staging/"
+
+        Compress-Archive -Path "./staging/*" -DestinationPath "./$zipName" -Force
+
+        echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.ZIP_NAME }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

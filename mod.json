@@ -1,0 +1,9 @@
+{
+  "id": "performance_fix",
+  "name": "Performance Fix",
+  "author": "AlexsanderHam",
+  "version": "0.1.0",
+  "description": "Improves performance by using asynchronous save writing and eliminating game stutters.",
+  "thumbnail": "",
+  "images": []
+}
